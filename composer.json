@@ -1,0 +1,15 @@
+{
+    "name": "badcow/shortcodes",
+    "authors": [
+        {
+            "name": "Sam Williams",
+            "email": "samuel.williams8@gmail.com"
+        }
+    ],
+    "require": {
+
+    },
+    "autoload": {
+        "psr-0": { "Shortcodes": "lib/" }
+    }
+}
