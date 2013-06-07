@@ -19,7 +19,7 @@ Basic Usage
 Installation
 ------------
 
-Use [Composer](http://getcomposer.org/). That's was all the cool kids use.
+Use [Composer](http://getcomposer.org/). That's what all the cool kids use.
 
     "require" : { "badcow/shortcodes": "dev-master" }
 
