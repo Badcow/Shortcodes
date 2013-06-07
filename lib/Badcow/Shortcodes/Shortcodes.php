@@ -87,7 +87,7 @@ class Shortcodes
             return false;
         }
 
-        preg_match_all($this->shortcodeRegex(), $content, $matches, PREG_SET_ORDER );
+        preg_match_all($this->shortcodeRegex(), $content, $matches, PREG_SET_ORDER);
 
         if (empty($matches)) {
             return false;
@@ -100,6 +100,122 @@ class Shortcodes
         }
 
         return false;
+    }
+
+    /**
+     * Search content for shortcodes and filter shortcodes through their hooks.
+     *
+     * If there are no shortcode tags defined, then the content will be returned
+     * without any filtering. This might cause issues when plugins are disabled but
+     * the shortcode will still show up in the post or content.
+     *
+     * @param string $content Content to search for shortcodes
+     * @return string Content with shortcodes filtered out.
+     */
+    public function process($content)
+    {
+        if (empty($this->shortcodes)) {
+            return $content;
+        }
+
+        return preg_replace_callback($this->shortcodeRegex(), array($this, 'processTag'), $content);
+    }
+
+    /**
+     * Remove all shortcode tags from the given content.
+     *
+     * @uses $shortcode_tags
+     *
+     * @param string $content Content to remove shortcode tags.
+     * @return string Content without shortcode tags.
+     */
+    public function stripAllShortcodes($content)
+    {
+        if (empty($this->shortcodes)) {
+            return $content;
+        }
+
+        return preg_replace_callback($this->shortcodeRegex(), array($this, 'stripShortcodeTag'), $content);
+    }
+
+    /**
+     * Regular Expression callable for do_shortcode() for calling shortcode hook.
+     *
+     * @see get_shortcode_regex for details of the match array contents.
+     *
+     * @param array $tag Regular expression match array
+     * @return mixed False on failure.
+     */
+    private function processTag(array $tag)
+    {
+        // allow [[foo]] syntax for escaping a tag
+        if ($tag[1] == '[' && $tag[6] == ']') {
+            return substr($tag[0], 1, -1);
+        }
+
+        $tagName = $tag[2];
+        $attr = $this->parseAttributes($tag[3]);
+
+        if (isset($tag[5])) {
+            // enclosing tag - extra parameter
+            return $tag[1] . call_user_func($this->shortcodes[$tagName], $attr, $tag[5], $tagName) . $tag[6];
+        } else {
+            // self-closing tag
+            return $tag[1] . call_user_func($this->shortcodes[$tagName], $attr, null, $tagName) . $tag[6];
+        }
+    }
+
+    /**
+     * Retrieve all attributes from the shortcodes tag.
+     *
+     * The attributes list has the attribute name as the key and the value of the
+     * attribute as the value in the key/value pair. This allows for easier
+     * retrieval of the attributes, since all attributes have to be known.
+     *
+     *
+     * @param string $text
+     * @return array List of attributes and their value.
+     */
+    private function parseAttributes($text)
+    {
+        $text = preg_replace("/[\x{00a0}\x{200b}]+/u", " ", $text);
+
+        if (!preg_match_all($this->attrPattern, $text, $matches, PREG_SET_ORDER)) {
+            return array(ltrim($text));
+        }
+
+        $attr = array();
+
+        foreach ($matches as $match) {
+            if (!empty($match[1])) {
+                $attr[strtolower($match[1])] = stripcslashes($match[2]);
+            } elseif (!empty($match[3])) {
+                $attr[strtolower($match[3])] = stripcslashes($match[4]);
+            } elseif (!empty($match[5])) {
+                $attr[strtolower($match[5])] = stripcslashes($match[6]);
+            } elseif (isset($match[7]) && strlen($match[7])) {
+                $attr[] = stripcslashes($match[7]);
+            } elseif (isset($match[8])) {
+                $attr[] = stripcslashes($match[8]);
+            }
+        }
+
+        return $attr;
+    }
+
+    /**
+     * Strips a tag leaving escaped tags
+     *
+     * @param $tag
+     * @return string
+     */
+    private function stripShortcodeTag($tag)
+    {
+        if ($tag[1] == '[' && $tag[6] == ']') {
+            return substr($tag[0], 1, -1);
+        }
+
+        return $tag[1] . $tag[6];
     }
 
     /**
@@ -124,7 +240,7 @@ class Shortcodes
         $tagRegex = join('|', array_map('preg_quote', array_keys($this->shortcodes)));
 
         return
-              '/'
+            '/'
             . '\\['                              // Opening bracket
             . '(\\[?)'                           // 1: Optional second opening bracket for escaping shortcodes: [[tag]]
             . "($tagRegex)"                      // 2: Shortcode name
@@ -154,117 +270,5 @@ class Shortcodes
             . ')'
             . '(\\]?)'                           // 6: Optional second closing brocket for escaping shortcodes: [[tag]]
             . '/s';
-    }
-
-    /**
-     * Search content for shortcodes and filter shortcodes through their hooks.
-     *
-     * If there are no shortcode tags defined, then the content will be returned
-     * without any filtering. This might cause issues when plugins are disabled but
-     * the shortcode will still show up in the post or content.
-     *
-     * @param string $content Content to search for shortcodes
-     * @return string Content with shortcodes filtered out.
-     */
-    public function process($content)
-    {
-        if (empty($this->shortcodes)) {
-            return $content;
-        }
-
-        return preg_replace_callback($this->shortcodeRegex(), array($this, 'processTag'), $content);
-    }
-
-    /**
-     * Regular Expression callable for do_shortcode() for calling shortcode hook.
-     * @see get_shortcode_regex for details of the match array contents.
-     *
-     * @param array $tag Regular expression match array
-     * @return mixed False on failure.
-     */
-    private function processTag(array $tag)
-    {
-        // allow [[foo]] syntax for escaping a tag
-        if ( $tag[1] == '[' && $tag[6] == ']' ) {
-            return substr($tag[0], 1, -1);
-        }
-
-        $tagName = $tag[2];
-        $attr = $this->parseAttributes($tag[3]);
-
-        if ( isset( $tag[5] ) ) {
-            // enclosing tag - extra parameter
-            return $tag[1] . call_user_func($this->shortcodes[$tagName], $attr, $tag[5], $tagName) . $tag[6];
-        } else {
-            // self-closing tag
-            return $tag[1] . call_user_func($this->shortcodes[$tagName], $attr, null,  $tagName) . $tag[6];
-        }
-    }
-
-    /**
-     * Retrieve all attributes from the shortcodes tag.
-     *
-     * The attributes list has the attribute name as the key and the value of the
-     * attribute as the value in the key/value pair. This allows for easier
-     * retrieval of the attributes, since all attributes have to be known.
-     *
-     *
-     * @param string $text
-     * @return array List of attributes and their value.
-     */
-    public function parseAttributes($text)
-    {
-        $text = preg_replace("/[\x{00a0}\x{200b}]+/u", " ", $text);
-
-        if (!preg_match_all($this->attrPattern, $text, $matches, PREG_SET_ORDER)) {
-            return array(ltrim($text));
-        }
-
-        $attr = array();
-
-        foreach ($matches as $match) {
-            if (!empty($match[1])) {
-                $attr[strtolower($match[1])] = stripcslashes($match[2]);
-            } elseif (!empty($match[3])) {
-                $attr[strtolower($match[3])] = stripcslashes($match[4]);
-            } elseif (!empty($match[5])) {
-                $attr[strtolower($match[5])] = stripcslashes($match[6]);
-            } elseif (isset($match[7]) and strlen($match[7])) {
-                $attr[] = stripcslashes($match[7]);
-            } elseif (isset($match[8])) {
-                $attr[] = stripcslashes($match[8]);
-            }
-        }
-
-        return $attr;
-    }
-
-
-    /**
-     * Remove all shortcode tags from the given content.
-     *
-     * @since 2.5
-     * @uses $shortcode_tags
-     *
-     * @param string $content Content to remove shortcode tags.
-     * @return string Content without shortcode tags.
-     */
-    public function stripAllShortcodes($content)
-    {
-        if (empty($this->shortcodes)) {
-            return $content;
-        }
-
-        return preg_replace_callback($this->shortcodeRegex(), array($this, 'stripShortcodeTag'), $content);
-    }
-
-    private function stripShortcodeTag($tag)
-    {
-        // allow [[foo]] syntax for escaping a tag
-        if ( $tag[1] == '[' && $tag[6] == ']' ) {
-            return substr($tag[0], 1, -1);
-        }
-
-        return $tag[1] . $tag[6];
     }
 }
