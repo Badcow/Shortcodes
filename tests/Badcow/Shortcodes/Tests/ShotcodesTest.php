@@ -11,6 +11,9 @@ class ShortcodesTest extends \PHPUnit_Framework_TestCase
      */
     private $qbf = 'The quick brown fox jumps over the lazy dog';
 
+    /**
+     * Tests basic key value pair in attributes
+     */
     public function testProcess_1()
     {
         $shortcodes = new Shortcodes;
@@ -22,6 +25,9 @@ class ShortcodesTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expectation, $shortcodes->process($content));
     }
 
+    /**
+     * Tests multiple shortcodes
+     */
     public function testProcess_2()
     {
         $shortcodes = new Shortcodes;
@@ -34,6 +40,9 @@ class ShortcodesTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expectation, $shortcodes->process($content));
     }
 
+    /**
+     * Tests enclosed shortcodes
+     */
     public function testProcess_3()
     {
         $shortcodes = new Shortcodes;
@@ -46,12 +55,87 @@ class ShortcodesTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Tests behaviour of no shortcodes defined
+     */
+    public function testProcess_4()
+    {
+        $shortcodes = new Shortcodes;
+        $content = 'Hello [enclosed]my name is sam[/enclosed]';
+
+        $this->assertEquals($content, $shortcodes->process($content));
+    }
+
+    /**
+     * Tests behaviour of self closed tags
+     */
+    public function testProcess_5()
+    {
+        $shortcodes = new Shortcodes;
+        $shortcodes->addShortcode('enclosed', array($this, 'dummyFunction_enclosed'));
+
+        $content = 'Hello [enclosed /]';
+        $expectation = 'Hello ';
+
+        $this->assertEquals($expectation, $shortcodes->process($content));
+    }
+
+    /**
+     * Tests basic key value pair in attributes
+     */
+    public function testProcess_6()
+    {
+        $shortcodes = new Shortcodes;
+        $shortcodes->addShortcode('test', array($this, 'dummyFunction_test'));
+
+        $content = 'Hello my name is [test name=\'Sam\']! [test job=programmer]';
+        $expectation = 'Hello my name is name: Sam! job: programmer';
+
+        $this->assertEquals($expectation, $shortcodes->process($content));
+    }
+
+    /**
+     * Tests basic key value pair in attributes
+     */
+    public function testProcess_7()
+    {
+        $shortcodes = new Shortcodes;
+        $shortcodes->addShortcode('test', array($this, 'dummyFunction_test'));
+
+        $content = 'Hello my name is [test "Sam"]! [test programmer]';
+        $expectation = 'Hello my name is 0: Sam! 0: programmer';
+
+        $this->assertEquals($expectation, $shortcodes->process($content));
+    }
+
+    /**
+     * Tests basic key value pair in attributes
+     */
+    public function testProcess_8()
+    {
+        $shortcodes = new Shortcodes;
+        $shortcodes->addShortcode('test', array($this, 'dummyFunction_test'));
+
+        $content = 'Hello my name is [test \'Sam\']!';
+        $expectation = 'Hello my name is 0: \'Sam\'!';
+
+        $this->assertEquals($expectation, $shortcodes->process($content));
+    }
+
+    /**
      * @expectedException \ErrorException
      */
     public function testAddShortcode()
     {
         $shortcodes = new Shortcodes;
         $shortcodes->addShortcode('enclosed','foobar');
+    }
+
+    public function testGetShortcodes()
+    {
+        $shortcodes = new Shortcodes;
+        $shortcodes->addShortcode('test', array($this, 'dummyFunction_test'));
+
+        $this->assertArrayHasKey('test', $shortcodes->getShortcodes());
     }
 
     public function testHasShortcode()
@@ -89,12 +173,26 @@ class ShortcodesTest extends \PHPUnit_Framework_TestCase
     public function testStripAllShortcodes()
     {
         $shortcodes = new Shortcodes;
-        $shortcodes->addShortcode('enclosed', array($this, 'dummyFunction_enclosed'));
 
-        $content = 'Hello [enclosed]my name is sam[/enclosed]';
-        $expectation = 'Hello ';
+        $content = 'Hello [enclosed]my name is sam[/enclosed] [[test]]';
+        $expectation = 'Hello  [test]';
+
+        $this->assertEquals($content, $shortcodes->stripAllShortcodes($content));
+
+        $shortcodes->addShortcode('enclosed', array($this, 'dummyFunction_enclosed'));
+        $shortcodes->addShortcode('test', array($this, 'dummyFunction_test'));
 
         $this->assertEquals($expectation, $shortcodes->stripAllShortcodes($content));
+    }
+
+    public function testRemoveShortcodes()
+    {
+        $shortcodes = new Shortcodes;
+        $shortcodes->addShortcode('test', array($this, 'dummyFunction_test'));
+
+        $this->assertTrue($shortcodes->hasShortcode('test'));
+        $shortcodes->removeShortcode('test');
+        $this->assertFalse($shortcodes->hasShortcode('test'));
     }
 
     public function dummyFunction_test(array $attributes)

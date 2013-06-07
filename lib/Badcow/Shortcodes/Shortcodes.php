@@ -12,6 +12,25 @@ namespace Badcow\Shortcodes;
  */
 class Shortcodes
 {
+    /**
+     * The regex for attributes.
+     *
+     * This regex covers the following attribute situations:
+     *  - key = "value"
+     *  - key = 'value'
+     *  - key = value
+     *  - "value"
+     *  - value
+     *
+     * @var string
+     */
+    private $attrPattern = '/(\w+)\s*=\s*"([^"]*)"(?:\s|$)|(\w+)\s*=\s*\'([^\']*)\'(?:\s|$)|(\w+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
+
+    /**
+     * Indexed array of tags: shortcode callbacks
+     *
+     * @var array
+     */
     private $shortcodes = array();
 
     /**
@@ -108,7 +127,7 @@ class Shortcodes
               '/'
             . '\\['                              // Opening bracket
             . '(\\[?)'                           // 1: Optional second opening bracket for escaping shortcodes: [[tag]]
-            . "($tagRegex)"                     // 2: Shortcode name
+            . "($tagRegex)"                      // 2: Shortcode name
             . '(?![\\w-])'                       // Not followed by word character or hyphen
             . '('                                // 3: Unroll the loop: Inside the opening shortcode tag
             .     '[^\\]\\/]*'                   // Not a closing bracket or forward slash
@@ -189,32 +208,35 @@ class Shortcodes
      * attribute as the value in the key/value pair. This allows for easier
      * retrieval of the attributes, since all attributes have to be known.
      *
+     *
      * @param string $text
      * @return array List of attributes and their value.
      */
     public function parseAttributes($text)
     {
-        $atts = array();
-        $pattern = '/(\w+)\s*=\s*"([^"]*)"(?:\s|$)|(\w+)\s*=\s*\'([^\']*)\'(?:\s|$)|(\w+)\s*=\s*([^\s\'"]+)(?:\s|$)|"([^"]*)"(?:\s|$)|(\S+)(?:\s|$)/';
         $text = preg_replace("/[\x{00a0}\x{200b}]+/u", " ", $text);
-        if ( preg_match_all($pattern, $text, $match, PREG_SET_ORDER) ) {
-            foreach ($match as $m) {
-                if (!empty($m[1]))
-                    $atts[strtolower($m[1])] = stripcslashes($m[2]);
-                elseif (!empty($m[3]))
-                    $atts[strtolower($m[3])] = stripcslashes($m[4]);
-                elseif (!empty($m[5]))
-                    $atts[strtolower($m[5])] = stripcslashes($m[6]);
-                elseif (isset($m[7]) and strlen($m[7]))
-                    $atts[] = stripcslashes($m[7]);
-                elseif (isset($m[8]))
-                    $atts[] = stripcslashes($m[8]);
-            }
-        } else {
-            $atts = array(ltrim($text));
+
+        if (!preg_match_all($this->attrPattern, $text, $matches, PREG_SET_ORDER)) {
+            return array(ltrim($text));
         }
 
-        return $atts;
+        $attr = array();
+
+        foreach ($matches as $match) {
+            if (!empty($match[1])) {
+                $attr[strtolower($match[1])] = stripcslashes($match[2]);
+            } elseif (!empty($match[3])) {
+                $attr[strtolower($match[3])] = stripcslashes($match[4]);
+            } elseif (!empty($match[5])) {
+                $attr[strtolower($match[5])] = stripcslashes($match[6]);
+            } elseif (isset($match[7]) and strlen($match[7])) {
+                $attr[] = stripcslashes($match[7]);
+            } elseif (isset($match[8])) {
+                $attr[] = stripcslashes($match[8]);
+            }
+        }
+
+        return $attr;
     }
 
 
