@@ -1,7 +1,10 @@
 Badcow Shortcodes
 =================
 
-This is a port of WordPress' brilliant shortcode feature for use outside of WordPress. The code has remained largely unchanged
+This is a port of WordPress' brilliant shortcode feature for use outside of WordPress. The code has remained largely
+unchanged.
+
+The purpose of this project is to use the familiar WordPress shortcode syntax in any system
 
 Basic Usage
 -----------
@@ -12,3 +15,15 @@ Basic Usage
     });
 
     echo $shortcodes->process('My shortcode does this: [hello greeting="Konnichiwa"]world![/hello]');
+
+Installation
+------------
+
+Use [Composer](http://getcomposer.org/). That's was all the cool kids use.
+
+    "require" : { "badcow/shortcodes": "dev-master" }
+
+Running Tests
+-------------
+
+    phpunit /path/to/shortcodes
