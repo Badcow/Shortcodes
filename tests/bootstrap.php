@@ -12,4 +12,4 @@ EOT
     );
 }
 
-$loader->add('Shortcodes\Tests', __DIR__);
+$loader->add('Badcow\Shortcodes\Tests', __DIR__);

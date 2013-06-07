@@ -2,7 +2,7 @@
 
 namespace Shortcodes\Tests;
 
-use Shortcodes\Shortcodes;
+use Badcow\Shortcodes\Shortcodes;
 
 class ShortcodesTest extends \PHPUnit_Framework_TestCase
 {

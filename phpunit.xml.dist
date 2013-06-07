@@ -17,7 +17,7 @@
     </testsuites>
     <filter>
         <whitelist>
-            <directory>./lib/Shortcodes/</directory>
+            <directory>./lib/Badcow/</directory>
         </whitelist>
     </filter>
 </phpunit>

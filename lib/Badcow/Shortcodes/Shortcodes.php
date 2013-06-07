@@ -1,6 +1,6 @@
 <?php
 
-namespace Shortcodes;
+namespace Badcow\Shortcodes;
 
 /**
  * This is a port of WordPress' brilliant shortcode feature

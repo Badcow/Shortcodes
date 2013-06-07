@@ -3,13 +3,13 @@
     "authors": [
         {
             "name": "Sam Williams",
-            "email": "samuel.williams8@gmail.com"
+            "email": "sam@badcow.co"
         }
     ],
     "require": {
 
     },
     "autoload": {
-        "psr-0": { "Shortcodes": "lib/" }
+        "psr-0": { "Badcow\\Shortcodes": "lib/" }
     }
 }
