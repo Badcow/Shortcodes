@@ -27,3 +27,8 @@ Running Tests
 -------------
 
     phpunit /path/to/shortcodes
+
+Build Status
+------------
+
+[![Build Status](https://travis-ci.org/samuelwilliams/shortcodes.png)](https://travis-ci.org/samuelwilliams/shortcodes)
