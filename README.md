@@ -1,10 +1,9 @@
 Badcow Shortcodes
 =================
 
-This is a port of WordPress' brilliant shortcode feature for use outside of WordPress. The code has remained largely
-unchanged.
+This is a port of WordPress' brilliant shortcode feature for use outside of WordPress. The code has remained largely unchanged.
 
-The purpose of this project is to use the familiar WordPress shortcode syntax in any system
+The purpose of this project is to use the familiar WordPress shortcode syntax in any system.
 
 Basic Usage
 -----------
@@ -31,4 +30,4 @@ Running Tests
 Build Status
 ------------
 
-[![Build Status](https://travis-ci.org/samuelwilliams/shortcodes.png)](https://travis-ci.org/samuelwilliams/shortcodes)
+[![Build Status](https://travis-ci.org/Badcow/Shortcodes.png)](https://travis-ci.org/Badcow/Shortcodes)
