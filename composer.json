@@ -7,9 +7,12 @@
         }
     ],
     "require": {
-
+        "php": ">=5.3.9"
     },
     "autoload": {
-        "psr-0": { "Badcow\\Shortcodes": "lib/" }
+        "psr-4": {
+            "Badcow\\Shortcodes\\": "lib/",
+            "Badcow\\Shortcodes\\Tests\\": "tests/"
+        }
     }
 }

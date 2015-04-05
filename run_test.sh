@@ -1,1 +1,0 @@
-phpunit --coverage-html=public_html .
